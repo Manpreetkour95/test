@@ -7,3 +7,5 @@ def remove_single_letter_words(text):
     filtered_words = [word for word in words if len(word) > 1]  # Filtering out words with length 1
     filtered_text = ' '.join(filtered_words)  # Joining the remaining words back into a string
     return filtered_text
+    
+    [^a-zA-Z\s]
