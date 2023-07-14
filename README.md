@@ -1,20 +1,56 @@
 # test
-# Prepare training data
-training_data_lines = []
-for text, label in data_list:
-    line = f"{text} __label__{label}\n"
-    training_data_lines.append(line)
+from transformers import ElectraForSequenceClassification, ElectraTokenizer, TrainingArguments, Trainer
+import torch
 
-# Write training data to a file
-train_data_file = "train.txt"  # Path to the training data file
-with open(train_data_file, "w", encoding="utf-8") as file:
-    file.writelines(training_data_lines)
+# Define a dummy dataset
+train_texts = ["This is the first example.", "Another example for training.", "One more training example."]
+train_labels = [1, 0, 1]  # Example labels (binary classification)
 
-# Training the model
-model = fasttext.train_supervised(input=train_data_file, lr=0.1, epoch=25, wordNgrams=2)
+# Load tokenizer
+tokenizer = ElectraTokenizer.from_pretrained("google/electra-base-discriminator")
 
-# Testing the model
-test_data = "test.txt"  # Path to the testing data file
-result = model.test(test_data)
-print("Precision:", result[1])
-print("Recall:", result[2])
+# Tokenize the training texts
+tokenized_inputs = tokenizer(train_texts, padding=True, truncation=True, return_tensors="pt")
+
+# Create a torch Dataset
+class DummyDataset(torch.utils.data.Dataset):
+    def __init__(self, encodings, labels):
+        self.encodings = encodings
+        self.labels = labels
+
+    def __getitem__(self, idx):
+        item = {key: val[idx] for key, val in self.encodings.items()}
+        item["labels"] = torch.tensor(self.labels[idx])
+        return item
+
+    def __len__(self):
+        return len(self.labels)
+
+dataset = DummyDataset(tokenized_inputs, train_labels)
+
+# Load the pre-trained Electra model
+model = ElectraForSequenceClassification.from_pretrained("google/electra-base-discriminator")
+
+# Set the number of labels
+model.config.num_labels = 2  # Number of classes (binary classification)
+
+# Set up training arguments
+training_args = TrainingArguments(
+    output_dir="output_directory",
+    num_train_epochs=3,
+    per_device_train_batch_size=16,
+    save_steps=500,
+    save_total_limit=2,
+    overwrite_output_dir=True,
+)
+
+# Set up the Trainer
+trainer = Trainer(
+    model=model,
+    args=training_args,
+    train_dataset=dataset,
+)
+
+# Start training
+trainer.train()
+
