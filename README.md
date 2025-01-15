@@ -1,1 +1,1 @@
-Indexing automation is the process of leveraging technology, such as artificial intelligence and machine learning, to automate the extraction of customer information from emails received from internal partners or clients. This involves identifying and labeling emails based on their content and categorizing them into specific buckets, ensuring that the appropriate officer or team can efficiently process the requests mentioned in the emails. This reduces manual effort, improves accuracy, and enhances operational efficiency.
+
